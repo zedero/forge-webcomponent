@@ -1,0 +1,99 @@
+<style>
+  html, body {
+    height: 100%;
+  }
+
+  bim-viewer {
+    height: 100%;
+  }
+
+  #MyViewerDiv {
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    background-color: #F0F8FF;
+  }
+</style>
+<link rel="stylesheet" href="https://developer.api.autodesk.com/modelderivative/v2/viewers/style.min.css?v=6.0.0" type="text/css">
+<script src="https://developer.api.autodesk.com/modelderivative/v2/viewers/lmvworker.js?v=6.0.0"></script>
+<script src="https://developer.api.autodesk.com/modelderivative/v2/viewers/viewer3D.js?v=6.0.0"></script>
+<template id="template">
+  <div id="MyViewerDiv"></div>
+</template>
+<script>
+  const currentDocument = document.currentScript.ownerDocument;
+
+  class BimViewer extends HTMLElement {
+    constructor() {
+      super();
+
+      window.bimViewerObject = this.test;
+    }
+
+    connectedCallback() {
+      const shadowRoot = this.attachShadow({ mode: 'open' });
+      const template = currentDocument.querySelector('#template');
+      const instance = template.content.cloneNode(true);
+      shadowRoot.appendChild(instance);
+
+      let viewerDiv = this.shadowRoot.querySelector('#MyViewerDiv');
+      let viewer;
+      let options = {
+        env: 'Local',
+        useADP: false,
+        memory: {
+          limit: 350
+        }
+      };
+
+      Autodesk.Viewing.Initializer(options, function onInitialized(){
+        onDocumentLoadSuccess();
+      });
+
+      /**
+       * Autodesk.Viewing.Document.load() success callback.
+       * Proceeds with model initialization.
+       */
+      function onDocumentLoadSuccess(doc) {
+        let svfUrl = './EMSD HQ NEW/Resource/三维视图/{3D} 2035347/{3D}.svf';
+        let modelOptions = {};
+
+        viewer = new Autodesk.Viewing.Private.GuiViewer3D(viewerDiv);
+        viewer.start(svfUrl, modelOptions, onLoadModelSuccess, onLoadModelError);
+      }
+
+      /**
+       * Autodesk.Viewing.Document.load() failuire callback.
+       */
+      function onDocumentLoadFailure(viewerErrorCode) {
+        console.error('onDocumentLoadFailure() - errorCode:' + viewerErrorCode);
+      }
+
+      /**
+       * viewer.loadModel() success callback.
+       * Invoked after the model's SVF has been initially loaded.
+       * It may trigger before any geometry has been downloaded and displayed on-screen.
+       */
+      function onLoadModelSuccess(model) {
+        console.log('onLoadModelSuccess()!');
+        console.log('Validate model loaded: ' + (viewer.model === model));
+        console.log(model);
+      }
+
+      /**
+       * viewer.loadModel() failure callback.
+       * Invoked when there's an error fetching the SVF file.
+       */
+      function onLoadModelError(viewerErrorCode) {
+        console.error('onLoadModelError() - errorCode:' + viewerErrorCode);
+      }
+    }
+
+    test() {
+      console.log('test');
+    }
+
+  }
+
+  window.customElements.define('bim-viewer', BimViewer);
+</script>
