@@ -20,6 +20,7 @@
   <div id="MyViewerDiv"></div>
 </template>
 <script>
+(function () {
   const currentDocument = document.currentScript.ownerDocument;
 
   class BimViewer extends HTMLElement {
@@ -95,4 +96,5 @@
   }
 
   window.customElements.define('bim-viewer', BimViewer);
+  })();
 </script>
